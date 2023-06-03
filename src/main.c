@@ -12,10 +12,14 @@ const char keyboard_map[CHIP8_TOTAL_KEYS] = {
 };
 
 int main(int argc, char** argv) {
+
+    // ----------------------- Initializing/Setup Chip8 -----------------------
     struct chip8 chip8;
     chip8_init(&chip8);
+
+    chip8_screen_set(&chip8.screen, 10, 6); // Setting pixel at (0, 0)
     
-    // Create SDL Window
+    // ----------------------- Create SDL Window -----------------------
     SDL_Window* window = SDL_CreateWindow(
         EMULATOR_WINDOW_TITLE, // Title
         SDL_WINDOWPOS_UNDEFINED, // X coordinate window position (In this case we are using default)
@@ -23,12 +27,13 @@ int main(int argc, char** argv) {
         CHIP8_WIDTH * CHIP8_WINDOW_MULTIPLIER, CHIP8_HEIGHT * CHIP8_WINDOW_MULTIPLIER, // 64x32 pixel window is what CHIP8 uses, but we will be scaling it up to be larger
         SDL_WINDOW_SHOWN
     );
-
-    // Drawing pixels to the screen with renderer
+    
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_TEXTUREACCESS_TARGET);
+
+    // ----------------------- Event Handling -----------------------
     while(1) {
         SDL_Event event;
-        while(SDL_PollEvent(&event)) { // Handling events 
+        while(SDL_PollEvent(&event)) {
             switch(event.type) {
                 case SDL_QUIT:
                     goto out;
@@ -56,19 +61,27 @@ int main(int argc, char** argv) {
             }
         }
 
-        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0); // Passing in our renderer, then setting draw color to black (Red, Blue, Green, Alpha) = 0
+        // ----------------------- Drawing pixels to the screen with renderer -----------------------
+
+        SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0); // Passing in our renderer, then setting the screen to black (Red, Blue, Green, Alpha) = 0
         SDL_RenderClear(renderer); // Paint over the entire screen black
-        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0);
+        SDL_SetRenderDrawColor(renderer, 255, 255, 255, 0); // Setting renderer to white so our rectangle is also white
 
-        // Draw a rectangle @ x-coordinate and y-coordinate 0, then width and height to 40 px
-        SDL_Rect r;
-        r.x = 0;
-        r.y = 0;
-        r.w = 40;
-        r.h = 40;
-
-        SDL_RenderDrawRect(renderer, &r);
-        SDL_RenderPresent(renderer);
+        for (int x = 0; x < CHIP8_WIDTH; x++) {
+            for (int y = 0; y < CHIP8_HEIGHT; y++) {
+                if (chip8_screen_is_set(&chip8.screen, x, y)) {
+                    // One rectangle represents one giant pixel (Since we are scaling up for bigger screen sizes on desktop)
+                    SDL_Rect r;
+                    r.x = x * CHIP8_WINDOW_MULTIPLIER;
+                    r.y = y * CHIP8_WINDOW_MULTIPLIER;
+                    r.w = CHIP8_WINDOW_MULTIPLIER;
+                    r.h = CHIP8_WINDOW_MULTIPLIER;
+                    // SDL_RenderDrawRect(renderer, &r);
+                    SDL_RenderFillRect(renderer, &r); // Filled white pixel
+                    SDL_RenderPresent(renderer);
+                }
+            }
+        }
     } 
 
 out:
