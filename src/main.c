@@ -4,6 +4,7 @@
 #include "chip8.h"
 #include "config.h"
 #include "chip8keyboard.h"
+#include "chip8screen.h"
 
 const char keyboard_map[CHIP8_TOTAL_KEYS] = {
     SDLK_0, SDLK_1, SDLK_2, SDLK_3, SDLK_4, SDLK_5,
@@ -17,7 +18,8 @@ int main(int argc, char** argv) {
     struct chip8 chip8;
     chip8_init(&chip8);
 
-    chip8_screen_set(&chip8.screen, 10, 6); // Setting pixel at (0, 0)
+    // chip8_screen_set(&chip8.screen, 10, 6); // Setting pixel at ((x, y)
+    chip8_screen_draw_sprite_struct(&chip8.screen, 32, 15, &chip8.memory.memory[0x0F], 5);
     
     // ----------------------- Create SDL Window -----------------------
     SDL_Window* window = SDL_CreateWindow(
@@ -78,10 +80,10 @@ int main(int argc, char** argv) {
                     r.h = CHIP8_WINDOW_MULTIPLIER;
                     // SDL_RenderDrawRect(renderer, &r);
                     SDL_RenderFillRect(renderer, &r); // Filled white pixel
-                    SDL_RenderPresent(renderer);
                 }
             }
         }
+        SDL_RenderPresent(renderer);
     } 
 
 out:
