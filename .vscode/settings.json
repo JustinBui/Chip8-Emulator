@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "chip8keyboard.h": "c",
+        "chip8.h": "c"
+    }
+}
