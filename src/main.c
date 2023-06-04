@@ -14,14 +14,40 @@ const char keyboard_map[CHIP8_TOTAL_KEYS] = {
 };
 
 int main(int argc, char** argv) {
+    if (argc < 2) {
+        printf("You must provide a file to load");
+        return -1;
+    }
+
+    const char* filename = argv[1];
+    printf("Reading in file %s...\n", filename);
+    
+    FILE* f = fopen(filename, "rb"); // Read binary files
+
+    if (!f) {
+        printf("Failed to open file");
+        return -1;
+    }
+
+    fseek(f, 0, SEEK_END);      // Identifying the buffer size of the file provided from start (0) to end (SEEK_END)
+    long size = ftell(f);       // Return size of the file
+    fseek(f, 0, SEEK_SET);      // Seek back to the beginning of the file
+
+    char buf[size]; // Making our buffer
+    int res = fread(buf, size, 1, f); // Read from file
+
+    if (res != 1) {
+        printf("Failed to read from file");
+        return -1;
+    }
 
     // ----------------------- Initializing/Setup Chip8 -----------------------
     struct chip8 chip8;
     chip8_init(&chip8);
-    chip8.registers.sound_timer = 30;
 
-    // chip8_screen_set(&chip8.screen, 10, 6); // Setting pixel at ((x, y)
-    chip8_screen_draw_sprite_struct(&chip8.screen, 32, 15, &chip8.memory.memory[0x0F], 5);
+    chip8_load(&chip8, buf, size);
+
+    chip8_screen_draw_sprite(&chip8.screen, 32, 15, &chip8.memory.memory[0x0F], 5);
     
     // ----------------------- Create SDL Window -----------------------
     SDL_Window* window = SDL_CreateWindow(
@@ -96,6 +122,13 @@ int main(int argc, char** argv) {
             Beep(1500, 100 * chip8.registers.sound_timer);
             chip8.registers.sound_timer -= 0;
         }
+
+        // Read 2 bytes from memory from where the program counter is pointing to (Opcode), then execute opcode
+        unsigned short opcode = chip8_memory_get_short(&chip8.memory, chip8.registers.PC);
+        chip8_exec(&chip8, opcode);
+        chip8.registers.PC += 2; // Increasing program counter by 2 to read the next 2 bytes in the loop
+
+        printf("%x\n", opcode);
     } 
 
 out:

@@ -23,7 +23,7 @@ bool chip8_screen_is_set(struct chip8_screen* screen, int x, int y) {
 // at coordinates x and y. 
 // ==> Sprites are XORed onto the existing screen. If this causes any pixels to be erased, VF = 1, else VF = 0
 // ==> If sprite overflows outside of the screen, it wraps around to the opposite side of screen.
-bool chip8_screen_draw_sprite_struct(struct chip8_screen* screen, int x, int y, const char* sprite, int num) {
+bool chip8_screen_draw_sprite(struct chip8_screen* screen, int x, int y, const char* sprite, int num) {
     // We change this variable to true if the sprite was "hit" (i.e if a pixel was changed)
     bool pixel_collision = false;
 

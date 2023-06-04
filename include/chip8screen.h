@@ -13,6 +13,6 @@ void chip8_screen_set(struct chip8_screen* screen, int x, int y);
 
 bool chip8_screen_is_set(struct chip8_screen* screen, int x, int y);
 
-bool chip8_screen_draw_sprite_struct(struct chip8_screen* screen, int x, int y, const char* sprite, int num);
+bool chip8_screen_draw_sprite(struct chip8_screen* screen, int x, int y, const char* sprite, int num);
 
 #endif
