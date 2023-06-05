@@ -1,4 +1,5 @@
 #include "chip8.h"
+#include "chip8screen.h"
 #include<memory.h>
 #include <assert.h>
 #include <stdio.h>
@@ -46,8 +47,83 @@ void chip8_load(struct chip8* chip8, const char* buffer, size_t size) {
     chip8->registers.PC = CHIP8_PROGRAM_LOAD_ADDRESS;   // Setting the program counter to the starting load address
 }
 
+
+/*******************************************************************
+* nnn or addr - A 12-bit value, the lowest 12 bits of the instruction
+* n or nibble - A 4-bit value, the lowest 4 bits of the instruction
+* x - A 4-bit value, the lower 4 bits of the high byte of the instruction
+* y - A 4-bit value, the upper 4 bits of the low byte of the instruction
+* kk or byte - An 8-bit value, the lowest 8 bits of the instruction
+*******************************************************************/
+static void chip8_exec_extended(struct chip8* chip8, unsigned short opcode) {
+    // Ex: 2nnn
+    unsigned short nnn = opcode & 0x0fff;
+
+    // Ex: 3xkk
+    unsigned char x = (opcode >> 8) & 0x000f;
+    unsigned char kk = opcode & 0x00ff;
+    unsigned char y = (opcode >> 4) & 0x000f;
+
+    switch(opcode & 0xf000) {
+        // JP addr - 1nnn jump to location nnn's
+        case 0x1000:
+            chip8->registers.PC = nnn;
+        break;
+
+        // CALL addr - 2nn Call subroutine at location nnn
+        case 0x2000:
+            chip8_stack_push(chip8, chip8->registers.PC); // Push program counter to the stack
+            chip8->registers.PC = nnn; // PC is set to nnn
+        break;
+
+        // SE Vx, byte - 3xkk Skip next instruction if Vx=kk
+        case 0x3000:
+            if (chip8->registers.V[x] == kk) {
+                chip8->registers.PC += 2; // Each instruction in CHIP8 is 2 bytes, therefore skip by 2
+            }
+        break;
+
+        // SNE Vx, byte - Skip next instruction if Vx != kk.
+        case 0x4000:
+            if (chip8->registers.V[x] != kk) {
+                chip8->registers.PC += 2; // Each instruction in CHIP8 is 2 bytes, therefore skip by 2
+            }
+        break;
+
+        // SE Vx, Vy - Skip the next instruction if V[x] == V[y]
+        case 0x5000:
+            if (chip8->registers.V[x] == chip8->registers.V[y]) {
+                chip8->registers.PC += 2;
+            }
+        break;
+
+        // LD Vx, byte - Set Vx = kk.
+        case 0x6000:
+            chip8->registers.V[x] = kk;
+        break;
+
+        // ADD Vx, byte - Set Vx = Vx + kk
+        case 0x7000:
+            chip8->registers.V[x] += kk;
+        break;
+
+        
+    }
+}
+
 // Function to execute a specific instruction set
 // ==> Each opcode is 8 bytes long in CHIP8, therefore it is unsigned short
 void chip8_exec(struct chip8* chip8, unsigned short opcode) {
-    
+    switch(opcode) {
+        case 0x00E0: // Clear the display.
+            chip8_screen_clear(&chip8->screen);
+        break;
+
+        case 0x00EE: // Return from a subroutine.
+            chip8->registers.PC = chip8_stack_pop(chip8);
+        break;
+
+        default: // Special case instructions where bitwise operators needa be done
+            chip8_exec_extended(chip8, opcode);
+    }
 }
