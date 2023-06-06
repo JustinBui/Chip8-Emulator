@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
                     char key = event.key.keysym.sym;
                     int vkey = chip8_keyboard_map(&chip8.keyboard, key);
                     if (vkey != -1) {
-                        chip8_keyboard_down(&chip8.keyboard, vkey);
+                        chip8_keyboard_up(&chip8.keyboard, vkey);
                     }
                 }
                 break;
@@ -117,12 +117,12 @@ int main(int argc, char** argv) {
         SDL_RenderPresent(renderer);
 
         if (chip8.registers.delay_timer > 0) {
-            Sleep(100);
+            Sleep(1);
             chip8.registers.delay_timer -= 1;
         }
 
         if (chip8.registers.sound_timer > 0) {
-            Beep(1500, 100 * chip8.registers.sound_timer);
+            Beep(1500, 10 * chip8.registers.sound_timer);
             chip8.registers.sound_timer = 0;
         }
 

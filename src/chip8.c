@@ -171,7 +171,7 @@ static void chip8_exec_extended_F(struct chip8* chip8, unsigned short opcode) {
 
         // Fx18 - LD ST, Vx - Set sound timer = Vx.
         case 0x1E:
-            chip8->registers.I = chip8->registers.I + chip8->registers.V[x];
+            chip8->registers.I += chip8->registers.V[x];
         break;
 
         // Fx29 - LD F, Vx - Set I = location of sprite for digit Vx.
