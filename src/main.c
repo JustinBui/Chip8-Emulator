@@ -47,6 +47,7 @@ int main(int argc, char** argv) {
     struct chip8 chip8;
     chip8_init(&chip8);
     chip8_load(&chip8, buf, size);
+    chip8_keyboard_set_map(&chip8.keyboard, keyboard_map);
 
     // ----------------------- Create SDL Window -----------------------
     SDL_Init(SDL_INIT_EVERYTHING); // Initalize everything with SDL
@@ -60,9 +61,11 @@ int main(int argc, char** argv) {
     
     SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_TEXTUREACCESS_TARGET);
 
-    // ----------------------- Event Handling -----------------------
+    // ----------------------- Running the program (Infinite Loop) -----------------------
     while(1) {
         SDL_Event event;
+
+        // Event Handling
         while(SDL_PollEvent(&event)) {
             switch(event.type) {
                 case SDL_QUIT:
@@ -72,7 +75,7 @@ int main(int argc, char** argv) {
                 case SDL_KEYDOWN:
                 {
                     char key = event.key.keysym.sym;
-                    int vkey = chip8_keyboard_map(keyboard_map, key);
+                    int vkey = chip8_keyboard_map(&chip8.keyboard, key);
                     if (vkey != -1) {
                         chip8_keyboard_down(&chip8.keyboard, vkey);
                     }
@@ -82,7 +85,7 @@ int main(int argc, char** argv) {
                 case SDL_KEYUP:
                 {
                     char key = event.key.keysym.sym;
-                    int vkey = chip8_keyboard_map(keyboard_map, key);
+                    int vkey = chip8_keyboard_map(&chip8.keyboard, key);
                     if (vkey != -1) {
                         chip8_keyboard_down(&chip8.keyboard, vkey);
                     }
